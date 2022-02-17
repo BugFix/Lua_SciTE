@@ -585,4 +585,109 @@ do
                     if butf8 == true then
                         table.insert(tchar, cbyte)
                         utf8len = utf8len -1
-                        if 
+                        if utf8len == 1 then
+                            table.insert(tRes, bytes2char(tchar))
+                            tchar = {}
+                            butf8 = false
+                        end
+                    else
+                        table.insert(tRes, c)
+                    end
+                end
+            end
+        else
+            for match in (_s.._delim):gmatch("(.-)".._delim) do
+                if match ~= '' then table.insert(tRes, match) end
+            end
+        end
+        return tRes
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Strip space characters (%s) from a string
+        _iFlag	one or combination of:
+                1 = strip leading space characters
+                2 = strip trailing space characters
+                4 = strip double (or more) space characters between words
+                8 = strip all space characters (over-rides all other flags)
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.StripSpaceChar = function(self, _s, _iFlag)
+        if _s == nil then return nil end
+        if _iFlag == nil then return _s end
+        local tPatt = {[1]={'^%s*',''},[2]={'%s*$',''},[4]={'(%S)%s+(%S)','%1 %2'},[8]={'%s+',''}}
+        if _iFlag > 7 then return _s:gsub(tPatt[8][1],tPatt[8][2]) end  -- treats combinations with 8 as 8
+        for i=0,3 do
+            local j = 2^i
+            if self:Power2And(_iFlag, j) then _s = _s:gsub(tPatt[j][1],tPatt[j][2]) end
+        end
+        return _s
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        The ternary operator as function
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.Ternary = function(self, _condition, _ifTrue, _ifFalse)
+        if _condition == true then return _ifTrue
+        else return _ifFalse end
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Trim _i chars from string _s
+        Positive integer trims from left, negative from right side
+        _s      String to trim
+        _i      Number of chars to trim
+        _bSpace  "true" deletes after trimming existing space chars on trimming side
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.Trim = function(self, _s, _i, _bSpace)
+        local iLen, tPatt, iPatt = _s:len(), {'^%s*', '%s*$'}, 1   -- {leftPatt,rightPatt}
+        local sTrim
+        if _i == nil then _i = 1 end
+        if _i >= iLen then return '' end
+        if _i == 0 then return _s
+        elseif _i < 0 then sTrim = _s:sub(1, iLen + _i) iPatt = 2  -- trim from right
+        else sTrim = _s:sub(_i + 1, -1) end                        -- trim from left
+        if _bSpace then sTrim = sTrim:gsub(tPatt[iPatt], '') end
+        return sTrim
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Returns the given string encoded for use in URL
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.UrlEncode = function(self, _s)
+        local tEscape = {[' ']='%%20',['!']='%%21',['"']='%%22',['#']='%%23',['%$']='%%24',['&']='%%26',["'"]='%%27',
+        ['%(']='%%28',['%)']='%%29',['%*']='%%2A',['%+']='%%2B',[',']='%%2C',['/']='%%2F',[':']='%%3A',[';']='%%3B',
+        ['<']='%%3C',['=']='%%3D',['>']='%%3E',['%?']='%%3F',['@']='%%40',['%[']='%%5B',['\\']='%%5C',[']']='%%5D',
+        ['{']='%%7B',['|']='%%7C',['}']='%%7D'}
+        _s = _s:gsub('%%','%%25')
+        for k, v in pairs(tEscape) do _s = _s:gsub(k, v) end
+        return _s
+    end
+    ------------------------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------------- /MISC ----
+
+
+    ---------------------------------------------------------------------------- AU3 - SPECIFIC ----
+
+    --[[
+        Returns a table with locations of AU3 - include files in the system
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.GetIncludePathes = function(self)
+        return self:Split(props['openpath.$(au3)'], ';')
+    end
+    ------------------------------------------------------------------------------------------------
+
+
+    --------------------------------------------------------------------------- /AU3 - SPECIFIC ----
+
+    return CommonTools
+end

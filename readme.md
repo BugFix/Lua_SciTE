@@ -1,3 +1,4 @@
+## conversion.lua
 ### Collection of functions for converting numbers of bases 2 to 16 among each other.
 #### Note
 With the exception of base10 values, all other values are used as strings.  
@@ -49,3 +50,5 @@ local result = conv.dec2bin(conv, 123)
 	- conversion.hex2oct
 	- conversion.hex2dec
 	- conversion.hex2duodec
+	
+## [CommonTools.lua](CommonTools.md)
