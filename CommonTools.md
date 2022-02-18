@@ -16,7 +16,7 @@ local tFRec = ct:GetFilesRecursive(ct:GetCurrentDir(), "lua", "hs")
 ### Content
 
 <table style='font-family:"Courier New"'>
-<tr><td style='color:darkblue'><b>SYSTEM</b></td></tr>
+<tr><td><b><span style='color:darkblue'>SYSTEM</span></b></td></tr>
 <tr><td>FileExists</td><td>Checks if a file exists</td></tr>
 <tr><td>FolderCreate</td><td>Creates a folder (if not exists)</td></tr>
 <tr><td>FolderExists</td><td>Checks if a folder exists</td></tr>
@@ -28,7 +28,7 @@ local tFRec = ct:GetFilesRecursive(ct:GetCurrentDir(), "lua", "hs")
 <tr><td>OSTime</td><td>Returns a string with the current time as "hh:mm:ss"</td></tr>
 <tr><td>require_protected</td><td>Load library protected</td></tr>
 
-<tr><td style='color:darkblue'><b>EDITOR</b></td></tr>
+<tr><td><b><span style='color:darkblue'>EDITOR</span></b></td></tr>
 <tr><td>EditorCodingCookieLine</td><td>Checks the current buffer for coding cookie. Returns the line number from this or nil.</td></tr>
 <tr><td>EditorDeleteLine</td><td>Deletes the passed line number from editor. Returns line content if success.</td></tr>
 <tr><td>EditorGetCommentChar</td><td>Returns the character(s) for a line comment of the passed file type (or default: from current buffer), if defined.</td></tr>
@@ -36,7 +36,7 @@ local tFRec = ct:GetFilesRecursive(ct:GetCurrentDir(), "lua", "hs")
 <tr><td>EditorMoveLine</td><td>Moves a line in editor up/down by param count (negative=up/positive=down).</td></tr>
 <tr><td>EditorTabColPosInLine</td><td>Returns column and position of previous/next TAB in passed line</td></tr>
 
-<tr><td style='color:darkblue'><b>MISC</b></td></tr>
+<tr><td><b><span style='color:darkblue'>MISC</span></b></td></tr>
 <tr><td>PropExt</td><td>Asks for propertie specified by filter.extension or extension</td></tr>
 <tr><td>EscapeMagic</td><td>Escapes all magic characters in a string:  ( ) . % + - * ? [ ^ $</td></tr>
 <tr><td>InSensePattern</td><td>Creates an insensitive pattern string ("Hallo" --> "[Hh][Aa][Ll][Ll][Oo]"). Ascii chars only!</td></tr>
@@ -49,7 +49,7 @@ local tFRec = ct:GetFilesRecursive(ct:GetCurrentDir(), "lua", "hs")
 <tr><td>Trim</td><td>Trim a count of chars from a strings left or right side</td></tr>
 <tr><td>UrlEncode</td><td>Returns the given string encoded for use in URL</td></tr>
 
-<tr><td style='color:darkblue'><b>AU3 - SPECIFIC</b></td></tr>
+<tr><td><b><span style='color:darkblue'>AU3 - SPECIFIC</span></b></td></tr>
 <tr><td>GetIncludePathes</td><td>Returns a table with locations of AU3 - include files in the system</td></tr>
 </table>
 
