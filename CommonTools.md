@@ -1,5 +1,5 @@
 ### Current
-v 0.6
+v 0.7
 ### Requires
 [conversion.lua](conversion.lua)
 ### Syntax
@@ -37,10 +37,11 @@ local tFRec = ct:GetFilesRecursive(ct:GetCurrentDir(), "lua", "hs")
 <tr><td>EditorTabColPosInLine</td><td>Returns column and position of previous/next TAB in passed line</td></tr>
 
 <tr><td><b><span style='color:darkblue'>MISC</span></b></td></tr>
-<tr><td>PropExt</td><td>Asks for property specified by filter.extension or extension</td></tr>
+<tr><td>ASCIIcompare</td><td>Comparison of two ASCII strings, optionally case-insensitive (default: case-sensitive). Return of both strings in sorted order.</td></tr>
 <tr><td>EscapeMagic</td><td>Escapes all magic characters in a string:  ( ) . % + - * ? [ ^ $</td></tr>
 <tr><td>InSensePattern</td><td>Creates an insensitive pattern string ("Hallo" --> "[Hh][Aa][Ll][Ll][Oo]"). Ascii chars only!</td></tr>
 <tr><td>Power2And</td><td>Checks if a passed uint value contains a given power of 2.</td></tr>
+<tr><td>PropExt</td><td>Asks for property specified by filter.extension or extension</td></tr>
 <tr><td>Split</td><td>Splits a string by the passed delimiter into a table (each character as one element only with ASCII characters)</td></tr>
 <tr><td>StringUTF8Len</td><td>Get the number of characters (not the number of bytes, like string.len) of a string with UTF8 characters</td></tr>
 <tr><td>StringUTF8Split</td><td>Splits a string by the passed delimiter into a table (each character as one element with UTF8 characters too)</td></tr>
