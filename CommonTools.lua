@@ -1,4 +1,4 @@
--- TIME_STAMP   2022-02-17 12:57:45   v 0.6
+-- TIME_STAMP   2022-02-24 10:57:39   v 0.7
 -- coding:utf-8
 
 --[[
@@ -31,10 +31,11 @@ EDITOR
     EditorTabColPosInLine               Returns column and position of previous/next TAB in passed line
 
 MISC
-    PropExt                             Asks for propertie specified by filter.extension or extension
+    ASCIIcompare                        Comparison of two ASCII strings, optionally case-insensitive (default: case-sensitive). Return of both strings in sorted order.
     EscapeMagic                         Escapes all magic characters in a string:  ( ) . % + - * ? [ ^ $
     InSensePattern                      Creates an insensitive pattern string ("Hallo" --> "[Hh][Aa][Ll][Ll][Oo]"). Ascii chars only!
     Power2And                           Checks if a passed uint value contains a given power of 2.
+    PropExt                             Asks for propertie specified by filter.extension or extension
     Split                               Splits a string by the passed delimiter into a table (each character as one element only with ASCII characters)
     StringUTF8Len                       Get the number of characters (not the number of bytes, like string.len) of a string with UTF8 characters
     StringUTF8Split                     Splits a string by the passed delimiter into a table (each character as one element with UTF8 characters too)
@@ -47,6 +48,7 @@ AU3 - SPECIFIC
     GetIncludePathes                    Returns a table with locations of AU3 - include files in the system
 ]]
 
+-- v 0.7    added:      ASCIIcompare()
 -- v 0.6    changed:    Detection of tab size with language specific "tab.size.filter_ext/ext" instead of global "tabsize"
 --          added:      PropExt()
 -- v 0.5    added:      Power2And()
@@ -424,21 +426,36 @@ do
 
 
     -------------------------------------------------------------------------------------- MISC ----
+
     --[[
-        Asks for property specified by
-            1. PROP.$(file.patterns.EXT)    if result is: ""
-            2. PROP.EXT
+        Comparison of two ASCII strings, optionally case-insensitive (default: case-sensitive).
+        Return of both strings in sorted order.
     ]]
-    ------------------------------------------------------------------------------------------------
-    CommonTools.PropExt = function(self, _sProp, _sExt)
-        if not _sProp:find('%.$') then _sProp = _sProp..'.' end
-        if _sExt:find('^%.') then _sExt = _sExt:sub(2) end
-        local val = props[_sProp..'$(file.patterns.'.._sExt..')']
-        if val == '' then val = props[_sProp.._sExt] end
-        return val
+    CommonTools.ASCIIcompare = function(self, _s1, _s2, _bSensitive)
+        if _bSensitive == nil then _bSensitive = true end -- default
+        local ByteSensitive = function(_i)
+            local a, b = _s1:sub(_i,_i):byte(), _s2:sub(_i,_i):byte()
+            if not _bSensitive then
+                if a >= 65 and a <= 90 then a = a + 32 end
+                if b >= 65 and b <= 90 then b = b + 32 end
+            end
+            return a, b
+        end
+        local len1, len2 = _s1:len(), _s2:len()
+        local min, sShort, sLong = len1, _s1, _s2
+        if len2 < len1 then
+            min = len2
+            sShort, sLong = sLong, sShort
+        end
+        for i=1, min do
+            local a, b = ByteSensitive(i)
+            if a < b then return _s1, _s2 end
+            if a > b then return _s2, _s1 end
+            if (a == b) and (i == min) then return sShort, sLong end
+        end
+        return _s1, _s2
     end
     ------------------------------------------------------------------------------------------------
-
 
     --[[
         Escapes all magic characters in a string
@@ -459,6 +476,7 @@ do
         _s = _s:gsub("%a", function(_c) return string.format("[%s%s]", _c:upper(),_c:lower()) end) return _s
     end
     ------------------------------------------------------------------------------------------------
+
 
     --[[
         Checks if a passed uint value contains a given power of 2.
@@ -482,6 +500,21 @@ do
         until (temp == _powerof2)
         local tpow = uint2power(_uint)
         return (tpow[tindex[_powerof2]] == 1)
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Asks for property specified by
+            1. PROP.$(file.patterns.EXT)    if result is: ""
+            2. PROP.EXT
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.PropExt = function(self, _sProp, _sExt)
+        if not _sProp:find('%.$') then _sProp = _sProp..'.' end
+        if _sExt:find('^%.') then _sExt = _sExt:sub(2) end
+        local val = props[_sProp..'$(file.patterns.'.._sExt..')']
+        if val == '' then val = props[_sProp.._sExt] end
+        return val
     end
     ------------------------------------------------------------------------------------------------
 
