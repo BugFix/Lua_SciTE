@@ -37,7 +37,7 @@ local tFRec = ct:GetFilesRecursive(ct:GetCurrentDir(), "lua", "hs")
 <tr><td>EditorTabColPosInLine</td><td>Returns column and position of previous/next TAB in passed line</td></tr>
 
 <tr><td><b><span style='color:darkblue'>MISC</span></b></td></tr>
-<tr><td>PropExt</td><td>Asks for propertie specified by filter.extension or extension</td></tr>
+<tr><td>PropExt</td><td>Asks for property specified by filter.extension or extension</td></tr>
 <tr><td>EscapeMagic</td><td>Escapes all magic characters in a string:  ( ) . % + - * ? [ ^ $</td></tr>
 <tr><td>InSensePattern</td><td>Creates an insensitive pattern string ("Hallo" --> "[Hh][Aa][Ll][Ll][Oo]"). Ascii chars only!</td></tr>
 <tr><td>Power2And</td><td>Checks if a passed uint value contains a given power of 2.</td></tr>
