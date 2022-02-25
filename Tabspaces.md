@@ -7,7 +7,7 @@ v 0.2
 ### Usage
 - Load the file with "SciTEStartup.lua"
 - New entry in SciTEUser.properties:<br />
-	<span style='font-family:"Courier New"'>use.tabs.$(file.pattern.EXT)=0</span>&nbsp;&nbsp;or&nbsp;&nbsp;<span style='font-family:"Courier New"'>use.tabs.EXT=0</span> .<br />Don't use&nbsp;&nbsp;<span style='font-family:"Courier New"'>use.tabs=0</span>&nbsp;&nbsp;!<br />
+	```use.tabs.$(file.pattern.EXT)=0```&nbsp;&nbsp;or&nbsp;&nbsp;```use.tabs.EXT=0``` .<br />Don't use&nbsp;&nbsp;```use.tabs=0```&nbsp;&nbsp;!<br />
     If the property is set to&nbsp;&nbsp;<span style='font-family:"Courier New"'>>0</span>&nbsp;&nbsp;, the script will not respond.
     For use with values other than the default, see remarks.
 ### Functions
@@ -29,5 +29,5 @@ The (not file type specific) values:
 	tab.indents=1
 	backspace.unindents=1
 should also set.<br />
-If&nbsp;&nbsp;<span style='font-family:"Courier New"'>tab.indents</span>&nbsp;&nbsp;is set then pressing tab within indentation whitespace indents by indent.size rather than inserting a tab character.
-If&nbsp;&nbsp;<span style='font-family:"Courier New"'>backspace.unindents</span>&nbsp;&nbsp;then pressing backspace within indentation whitespace unindents by indent.size rather than deleting the character before the caret.
+If&nbsp;&nbsp;```tab.indents```&nbsp;&nbsp;is set then pressing tab within indentation whitespace indents by indent.size rather than inserting a tab character.
+If&nbsp;&nbsp;```backspace.unindents```&nbsp;&nbsp;then pressing backspace within indentation whitespace unindents by indent.size rather than deleting the character before the caret.
