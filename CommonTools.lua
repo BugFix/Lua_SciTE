@@ -1,10 +1,19 @@
--- TIME_STAMP   2022-02-24 11:07:45   v 0.7
+-- TIME_STAMP   2022-03-18 11:40:56   v 0.8
 -- coding:utf-8
 
 --[[
 USAGE
-    load module:	module = require "ModuleName"
-    function call:	module:FunctionName()
+    load module:    module = require "ModuleName"
+    function call:  module:FunctionName()
+
+    for nested module (like "StringOr")
+    function call:                          module.StringOr:FunctionName()
+    or
+    assign nested module:                   strOr = module.StringOr
+    function call:                          strOr:FunctionName()
+    or
+    load nested module only:                strOr = (require "CommonTools").StringOr
+    function call:                          strOr:FunctionName()
 
 REQUIRES    module "conversion.lua"     ( https://github.com/BugFix/Conversion/blob/master/conversion.lua )
                                         ( https://autoit.de/thread/86555-konvertieren-zwischen-zahlensystemen-in-lua/?postID=695947#post695947 )
@@ -29,17 +38,26 @@ EDITOR
     EditorGetEOL                        Returns length, mode of EOL and the EOL character(s) in current SciTE buffer
     EditorMoveLine                      Moves a line in editor up/down by param count (negative=up/positive=down).
     EditorTabColPosInLine               Returns column and position of previous/next TAB in passed line
+    EditorTabReplace                    Replaces all TAB in the file currently open in SciTE
 
 MISC
-    ASCIIcompare                        Comparison of two ASCII strings, optionally case-insensitive (default: case-sensitive). Return of both strings in sorted order.
+    ASCIIcompare                        Comparison of two ASCII strings, optionally case-insensitive (default: case-sensitive), descending (default: ascending). Return of both strings in sorted order.
     EscapeMagic                         Escapes all magic characters in a string:  ( ) . % + - * ? [ ^ $
     InSensePattern                      Creates an insensitive pattern string ("Hallo" --> "[Hh][Aa][Ll][Ll][Oo]"). Ascii chars only!
+    LineTabReplace                      Replaces TAB in a line with the number of spaces corresponding to the column.
     Power2And                           Checks if a passed uint value contains a given power of 2.
     PropExt                             Asks for propertie specified by filter.extension or extension
     Split                               Splits a string by the passed delimiter into a table (each character as one element only with ASCII characters)
+    StringOr                            A nested module with string functions: .find / .gmatch / .gsub / .match
+                                        Lua patterns do not support alternations. Therefore, these functions can be called here
+                                        with a list of patterns applied to the string. The pattern works: "patt1 or patt2 or patt_n"
+    StringOr.find                       Returns start/end of the first occurence of the first matching pattern.
+    StringOr.gmatch                     Returns a table with all occurences of each matching pattern.
+    StringOr.gsub                       Returns a string in which all (or _n) occurrences of each matching pattern are replaced.
+    StringOr.match                      Returns the first occurence of the first matching pattern.
+    StripSpaceChar                      Strip space characters (%s) from a string.
     StringUTF8Len                       Get the number of characters (not the number of bytes, like string.len) of a string with UTF8 characters
     StringUTF8Split                     Splits a string by the passed delimiter into a table (each character as one element with UTF8 characters too)
-    StripSpaceChar                      Strip space characters (%s) from a string.
     Ternary                             The ternary operator as function (condition, if_true, if_false)
     Trim                                Trim a count of chars from a strings left or right side
     UrlEncode                           Returns the given string encoded for use in URL
@@ -48,14 +66,20 @@ AU3 - SPECIFIC
     GetIncludePathes                    Returns a table with locations of AU3 - include files in the system
 ]]
 
--- v 0.7    added:      ASCIIcompare()
--- v 0.6    changed:    Detection of tab size with language specific "tab.size.filter_ext/ext" instead of global "tabsize"
---          added:      PropExt()
--- v 0.5    added:      Power2And()
---          changed:    StripSpaceChar(), now using Power2And() for flag check
--- v 0.4    added:      EditorTabColPosInLine()
---          added:      StripSpaceChar()
---          changed:    Split(), additional parameter to strip possible leading and trailing space characters from splitted items
+--[[ History
+    v 0.8   added:      nested module: StringOr ( .find() / .gmatch() / .gsub() / .match() )
+            added:      LineTabReplace()
+            added:      EditorTabReplace()
+            changed:    Additional optional parameter for descending order (true), default (nil)=ascending in the ASCIIcompare() function.
+    v 0.7   added:      ASCIIcompare()
+    v 0.6   changed:    Detection of tab size with language specific "tab.size.filter_ext/ext" instead of global "tabsize"
+            added:      PropExt()
+    v 0.5   added:      Power2And()
+            changed:    StripSpaceChar(), now using Power2And() for flag check
+    v 0.4   added:      EditorTabColPosInLine()
+            added:      StripSpaceChar()
+            changed:    Split(), additional parameter to strip possible leading and trailing space characters from splitted items
+]]
 
 
 do
@@ -84,7 +108,7 @@ do
 
     --[[
         Creates folder if not exists
-        Returns:	true, 'EXISTS'      - folder exists
+        Returns:    true, 'EXISTS'      - folder exists
                     true, 'SUCCESSFULL' - creation was successfull
                     false, 'FAILED'     - creation has failed
                     false, 'NO_PARAM'   - none folder was passed
@@ -341,7 +365,7 @@ do
         local l = editor.LineCount -2
         local mode, eol, lenEOL = "CRLF", "\r\n"            -- "\r" as single break exists only for Mac
         if l < 0 then -- the eol.mode from properties will used instead (but not sure, if exists)
-            mode = props["eol.mode."..props['FileExt']]    		   	-- mode for file type (if declared)
+            mode = props["eol.mode."..props['FileExt']]     -- mode for file type (if declared)
             if mode == "" then mode = props["eol.mode"] end -- otherwise the global mode
             if mode == "LF" then lenEOL = 1 eol = "\n" else lenEOL = 2 end
         else
@@ -402,7 +426,7 @@ do
     CommonTools.EditorTabColPosInLine = function(self, _bPrev, _iLine, _iCol)
         local iTabsize = self:PropExt('tab.size.', props['FileExt'])    -- 1st check for file type specific setting
         if iTabsize == '' then iTabsize = props['tabsize'] end          -- .. then check global
-        iTabsize = tonumber(iTabsize)
+        iTabsize = tonumber(iTabsize) or 4                              -- if no value exists, 4 is used
         _iLine = _iLine or editor:LineFromPosition(editor.CurrentPos)
         local iCol, iColStart
         if _bPrev then
@@ -422,6 +446,42 @@ do
         return iCol, posTab
     end
     ------------------------------------------------------------------------------------------------
+
+    --[[
+        Replaces all TAB in the file currently open in SciTE.
+        _tabsize    The tab size in count of characters
+                    If no value is passed, the tab size for the current file type is used if available as a property.
+                    Otherwise, the global setting is used. If nothing matches, 4 is used.
+        Returns the total number of replacements.
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.EditorTabReplace = function(self, _tabsize)
+        if _tabsize == nil then
+            _tabsize = self:PropExt('tab.size.', props['FileExt'])
+            if _tabsize == '' then _tabsize = props['tabsize'] end
+        end
+        _tabsize = tonumber(_tabsize) or 4
+        local caret = editor.CurrentPos
+        local fvl = editor.FirstVisibleLine
+        local content, sumRepl = '', 0
+        for i=0, editor.LineCount -1 do
+            local line, len, nRepl = editor:GetLine(i)
+            line, nRepl = self:LineTabReplace(line, _tabsize)
+            if line == nil then line = ({'\n','\r\n'})[len] end -- empty line, only line break
+            if line == nil then line = '' end                   -- empty line, w.o. line break
+            content = content..line
+            sumRepl = sumRepl + nRepl
+        end
+        editor:BeginUndoAction()
+        editor:ClearAll()
+        editor:InsertText(0, content)
+        editor:EndUndoAction()
+        editor.CurrentPos = caret
+        editor:SetSel(caret, caret)
+        editor.FirstVisibleLine = fvl
+        return sumRepl
+    end
+    ------------------------------------------------------------------------------------------------
     ----------------------------------------------------------------------------------- /EDITOR ----
 
 
@@ -429,9 +489,13 @@ do
 
     --[[
         Comparison of two ASCII strings, optionally case-insensitive (default: case-sensitive).
+        _s1, _s2        The strings to compare
+        _bSensitive     Case-sensitive comparison (default). "false" for case-insensitive.
+        _bDescending    Sort order descending if "true". Default is ascending.
         Return of both strings in sorted order.
     ]]
-    CommonTools.ASCIIcompare = function(self, _s1, _s2, _bSensitive)
+    ------------------------------------------------------------------------------------------------
+    CommonTools.ASCIIcompare = function(self, _s1, _s2, _bSensitive, _bDescending)
         if _bSensitive == nil then _bSensitive = true end -- default
         local ByteSensitive = function(_i)
             local a, b = _s1:sub(_i,_i):byte(), _s2:sub(_i,_i):byte()
@@ -447,13 +511,16 @@ do
             min = len2
             sShort, sLong = sLong, sShort
         end
-        for i=1, min do
+        for i=1, min do -- first position with differences in both strings detects the order
             local a, b = ByteSensitive(i)
-            if a < b then return _s1, _s2 end
-            if a > b then return _s2, _s1 end
-            if (a == b) and (i == min) then return sShort, sLong end
+            if a < b then if _bDescending == true then _s1, _s2 = _s2, _s1 end return _s1, _s2 end
+            if a > b then if _bDescending == true then _s1, _s2 = _s2, _s1 end return _s2, _s1 end
+            if (a == b) and (i == min) then
+                if _bDescending == true then sShort, sLong = sLong, sShort end
+                return sShort, sLong
+            end
         end
-        return _s1, _s2
+        return _s1, _s2 -- equal strings
     end
     ------------------------------------------------------------------------------------------------
 
@@ -477,6 +544,34 @@ do
     end
     ------------------------------------------------------------------------------------------------
 
+    --[[
+        Replaces TAB in a line with the number of spaces corresponding to the column.
+        _line      A line of text whose TAB are to be replaced by spaces.
+        _tabsize   TAB size in number of characters. If it is omitted, 4 is used.
+        Returns the line, with TAB replaced if necessary and the number of replacements.
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.LineTabReplace = function(self, _line, _tabsize)
+        if _line == nil then return nil, 0 end                  -- nothing passed (empty line)
+        if _line:find('^[\r\n]+$') then return _line, 0 end     -- only a line break
+        if _line == '' then return _line, 0 end                 -- only a empty string
+        local posTab = _line:find('\t')
+        if posTab == nil then return _line, 0 end               -- no TAB included
+        _tabsize = _tabsize or 4                                -- default TAB width
+        local tTab, s, sRep, iLen, sumLen = {}, ' ', '', 0, 0
+        while posTab ~= nil do
+            -- calculation replacement string, taking into account characters to be inserted
+            iLen = (_tabsize - ((posTab + sumLen -1) % _tabsize))
+            sumLen = sumLen + iLen -1                           -- total length of the replacements
+            sRep = s:rep(iLen)                                  -- create replacement string
+            table.insert(tTab, sRep)                            -- save to table
+            posTab = _line:find('\t', posTab +1)                -- find next TAB
+        end
+        local idx = 0
+        _line = _line:gsub('\t', function() idx = idx +1 return tTab[idx] end)
+        return _line, idx
+    end
+    ------------------------------------------------------------------------------------------------
 
     --[[
         Checks if a passed uint value contains a given power of 2.
@@ -543,6 +638,114 @@ do
             end
         end
         return tRes
+    end
+    ------------------------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------------------------
+    --[[
+        Nested module with string functions: .find / .gmatch / .gsub / .match
+        Lua patterns do not support alternations. Therefore, these functions can be called here
+        with a list of patterns applied to the string.
+        The same parameters are used as in the string library.
+
+        Parameters:
+        With the exception of the pattern, identical to the original string functions.
+        For _vPatt, a single pattern or a table with several patterns can be passed.
+    ]]
+    ------------------------------------------------------------------------------------------------
+    local StringOr = {}
+
+    StringOr.tPatt = {}
+    ------------------------------------------------------------------------------------------------
+    StringOr.pattern = function(self, _vPatt)
+        self.tPatt = _vPatt
+        if type(_vPatt) ~= 'table' then self.tPatt = {_vPatt} end
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Returns start/end of the first occurence of the first matching pattern.
+    ]]
+    ------------------------------------------------------------------------------------------------
+    StringOr.find = function(self, _s, _vPatt, _init, _plain)
+        self:pattern(_vPatt)
+        local s, e
+        for i=1, #self.tPatt do
+            s, e = _s:find(self.tPatt[i], _init, _plain)
+            if s ~= nil then return s, e end
+        end
+        return s, e
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Returns a table with all occurences of each matching pattern.
+        NOTE:   Remember that the caret cannot be used as an anchor here!
+    ]]
+    ------------------------------------------------------------------------------------------------
+    StringOr.gmatch = function(self, _s, _vPatt)
+        self:pattern(_vPatt)
+        local tMatch = {}
+        for i=1, #self.tPatt do
+            for match in _s:gmatch(self.tPatt[i]) do
+                table.insert(tMatch, match)
+            end
+        end
+        return tMatch
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Returns a string in which all (or _n) occurrences of each matching pattern are replaced.
+    ]]
+    ------------------------------------------------------------------------------------------------
+    StringOr.gsub = function(self, _s, _vPatt, _repl, _n)
+        self:pattern(_vPatt)
+        local sRes = _s
+        for i=1, #self.tPatt do
+            sRes = sRes:gsub(self.tPatt[i], _repl, _n)
+        end
+        return sRes
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Returns the first occurence of the first matching pattern.
+    ]]
+    ------------------------------------------------------------------------------------------------
+    StringOr.match = function(self, _s, _vPatt, _init)
+        self:pattern(_vPatt)
+        for i=1, #self.tPatt do
+            match = _s:match(self.tPatt[i])
+            if match ~= nil then return match end
+        end
+        return match
+    end
+    ------------------------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------------------------
+    CommonTools.StringOr = StringOr
+    ------------------------------------------------------------------------------------------------
+
+    --[[
+        Strip space characters (%s) from a string
+        _iFlag  one or combination of:
+                1 = strip leading space characters
+                2 = strip trailing space characters
+                4 = strip double (or more) space characters between words
+                8 = strip all space characters (over-rides all other flags)
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.StripSpaceChar = function(self, _s, _iFlag)
+        if _s == nil then return nil end
+        if _iFlag == nil then return _s end
+        local tPatt = {[1]={'^%s*',''},[2]={'%s*$',''},[4]={'(%S)%s+(%S)','%1 %2'},[8]={'%s+',''}}
+        if _iFlag > 7 then return _s:gsub(tPatt[8][1],tPatt[8][2]) end  -- treats combinations with 8 as 8
+        for i=0,3 do
+            local j = 2^i
+            if self:Power2And(_iFlag, j) then _s = _s:gsub(tPatt[j][1],tPatt[j][2]) end
+        end
+        return _s
     end
     ------------------------------------------------------------------------------------------------
 
@@ -638,28 +841,6 @@ do
     ------------------------------------------------------------------------------------------------
 
     --[[
-        Strip space characters (%s) from a string
-        _iFlag	one or combination of:
-                1 = strip leading space characters
-                2 = strip trailing space characters
-                4 = strip double (or more) space characters between words
-                8 = strip all space characters (over-rides all other flags)
-    ]]
-    ------------------------------------------------------------------------------------------------
-    CommonTools.StripSpaceChar = function(self, _s, _iFlag)
-        if _s == nil then return nil end
-        if _iFlag == nil then return _s end
-        local tPatt = {[1]={'^%s*',''},[2]={'%s*$',''},[4]={'(%S)%s+(%S)','%1 %2'},[8]={'%s+',''}}
-        if _iFlag > 7 then return _s:gsub(tPatt[8][1],tPatt[8][2]) end  -- treats combinations with 8 as 8
-        for i=0,3 do
-            local j = 2^i
-            if self:Power2And(_iFlag, j) then _s = _s:gsub(tPatt[j][1],tPatt[j][2]) end
-        end
-        return _s
-    end
-    ------------------------------------------------------------------------------------------------
-
-    --[[
         The ternary operator as function
     ]]
     ------------------------------------------------------------------------------------------------
@@ -719,8 +900,8 @@ do
     end
     ------------------------------------------------------------------------------------------------
 
-
     --------------------------------------------------------------------------- /AU3 - SPECIFIC ----
+
 
     return CommonTools
 end
