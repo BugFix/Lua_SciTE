@@ -50,7 +50,7 @@ local s, e = strOr:find("foobar", {"o","b"})
 <tr><td>EditorGetEOL</td><td>Returns length, mode of EOL and the EOL character(s) in current SciTE buffer</td></tr>
 <tr><td>EditorMoveLine</td><td>Moves a line in editor up/down by param count (negative=up/positive=down).</td></tr>
 <tr><td>EditorTabColPosInLine</td><td>Returns column and position of previous/next TAB in passed line</td></tr>
-<tr><td>EditorTabReplace</td><td>Replaces all TAB in the file currently open in SciTE</td></tr>
+<tr><td>EditorTabReplace</td><td>Replaces all TAB in the file currently open in SciTE with spaces</td></tr>
 
 <tr><td><b><span style='color:darkblue'>MISC</span></b></td></tr>
 <tr><td>ASCIIcompare</td><td>Comparison of two ASCII strings, optionally case-insensitive (default: case-sensitive). Return of both strings in sorted order.</td></tr>
