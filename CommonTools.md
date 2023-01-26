@@ -41,7 +41,7 @@ local s, e = strOr:find("foobar", {"o","b"})
 <tr><td>OSNow</td><td>Returns a table with date & time fields from now</td></tr>
 <tr><td>OSDate</td><td>Returns a string with the current date as "YYYY-MM-DD"</td></tr>
 <tr><td>OSTime</td><td>Returns a string with the current time as "hh:mm:ss"</td></tr>
-<tr><td>require_protected</td><td>Load library protected</td></tr>
+<tr><td>require_protected</td><td>Load library protected<br>No longer usable due to the use of [Lua 5.3](http://www.lua.org/manual/5.3/manual.html#8.3) in SciTE</td></tr>
 
 <tr><td><b><span style='color:darkblue'>EDITOR</span></b></td></tr>
 <tr><td>EditorCodingCookieLine</td><td>Checks the current buffer for coding cookie. Returns the line number from this or nil.</td></tr>
