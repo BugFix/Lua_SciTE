@@ -69,7 +69,7 @@ local s, e = strOr:find("foobar", {"o","b"})
 <tr><td>StringUTF8Len</td><td>Get the number of characters (not the number of bytes, like string.len) of a string with UTF8 characters</td></tr>
 <tr><td>StringUTF8Split</td><td>Splits a string by the passed delimiter into a table (each character as one element with UTF8 characters too)</td></tr>
 <tr><td>Ternary</td><td>The ternary operator as function (condition, if_true, if_false)</td></tr>
-<tr><td>Trim</td><td>Trim a count of chars from a strings left or right side</td></tr>
+<tr><td>Trim</td><td>Trim a count of chars from a strings left or right side<br>Optionally also remove remaining spaces</td></tr>
 <tr><td>UrlEncode</td><td>Returns the given string encoded for use in URL</td></tr>
 
 <tr><td><b><span style='color:darkblue'>AU3 - SPECIFIC</span></b></td></tr>
