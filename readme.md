@@ -1,3 +1,6 @@
+
+- [BlockComment](BlockComment.md)
+	- Enables the setting / unsetting of comment blocks 
 - [CommonTools](CommonTools.md)
 	- Useful Lua scripts for use with SciTE (primarily SciTE4AutoIt)
 - [conversion](conversion.md)
