@@ -1,5 +1,5 @@
 ### Current
-v 0.8
+v 0.9
 ### Requires
 [conversion.lua](conversion.lua)
 ### Syntax
@@ -32,6 +32,7 @@ local s, e = strOr:find("foobar", {"o","b"})
 
 <table style='font-family:"Courier New"'>
 <tr><td><b><span style='color:darkblue'>SYSTEM</span></b></td></tr>
+<tr><td>CommandlineRead</td><td>Runs a command in the Windows shell and saves the result rows in a table</td></tr>
 <tr><td>FileExists</td><td>Checks if a file exists</td></tr>
 <tr><td>FolderCreate</td><td>Creates a folder (if not exists)</td></tr>
 <tr><td>FolderExists</td><td>Checks if a folder exists</td></tr>

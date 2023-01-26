@@ -1,4 +1,4 @@
--- TIME_STAMP   2022-03-18 11:40:56   v 0.8
+-- TIME_STAMP   2023-01-26 11:04:22   v 0.9
 -- coding:utf-8
 
 --[[
@@ -20,6 +20,7 @@ REQUIRES    module "conversion.lua"     ( https://github.com/BugFix/Conversion/b
 
     Content
 SYSTEM
+	CommandlineRead						Runs a command in the Windows shell and saves the result rows in a table
     FileExists                          Checks if a file exists
     FolderCreate                        Creates a folder (if not exists)
     FolderExists                        Checks if a folder exists
@@ -46,7 +47,7 @@ MISC
     InSensePattern                      Creates an insensitive pattern string ("Hallo" --> "[Hh][Aa][Ll][Ll][Oo]"). Ascii chars only!
     LineTabReplace                      Replaces TAB in a line with the number of spaces corresponding to the column.
     Power2And                           Checks if a passed uint value contains a given power of 2.
-    PropExt                             Asks for propertie specified by filter.extension or extension
+    PropExt                             Asks for property specified by filter.extension or extension
     Split                               Splits a string by the passed delimiter into a table (each character as one element only with ASCII characters)
     StringOr                            A nested module with string functions: .find / .gmatch / .gsub / .match
                                         Lua patterns do not support alternations. Therefore, these functions can be called here
@@ -67,6 +68,9 @@ AU3 - SPECIFIC
 ]]
 
 --[[ History
+    v 0.9   added:      CommandlineRead()
+            removed:    all commands to use the shell.dll
+            changed:    call FileExists() now with CommandlineRead()
     v 0.8   added:      nested module: StringOr ( .find() / .gmatch() / .gsub() / .match() )
             added:      LineTabReplace()
             added:      EditorTabReplace()
@@ -88,6 +92,28 @@ do
 
     ------------------------------------------------------------------------------------ SYSTEM ----
     --[[
+        Runs a command in the Windows shell and saves the result rows in a table
+        _cmd        The command to run
+        _skipblank  Ignore blank lines in output (true/false), default=true
+        Returns:    Table with output lines
+    ]]
+    ------------------------------------------------------------------------------------------------
+    CommonTools.CommandlineRead = function(self, _cmd, _skipblank)
+        _skipblank = _skipblank or true
+        local t, f = {}, io.popen(_cmd)
+        for line in f:lines() do
+            if _skipblank == true then
+                if line ~= '' then table.insert(t, line) end
+            else
+                table.insert(t, line)
+            end
+        end
+        f:close()
+        return t
+    end
+    ------------------------------------------------------------------------------------------------
+
+    --[[
         Checks if file exists (true / false)
         _file       The file path to check
         Returns:    true / false
@@ -95,14 +121,11 @@ do
     ------------------------------------------------------------------------------------------------
     CommonTools.FileExists = function(self, _file)
         if _file == nil then return false end
-        local shell = self:require_protected('shell')
-        if shell then
-            return shell.fileexists(_file)
-        else
-            local fh = io.open(_file)
-            if fh ~= nil then fh:close() return true
-            else return false end
-        end
+        local t = self:CommandlineRead("if exist " .. '"' .. _file .. '"' .. " (echo true) else (echo false)")
+        return (t[1] == "true")
+--         local fh = io.open(_file)
+--         if fh ~= nil then fh:close() return true
+--         else return false end
     end
     ------------------------------------------------------------------------------------------------
 
@@ -117,12 +140,7 @@ do
     CommonTools.FolderCreate = function(self, _folder)
         if _folder == nil then return false, 'NO_PARAM' end
         if self:FolderExists(_folder) then return true, 'EXISTS' end
-        local shell, ret = self:require_protected('shell')
-        if shell then
-            ret = shell.exec('CMD /C MD "' .. _folder .. '"', nil, true, true)
-        else
-            ret = os.execute('CMD /C MD "' .. _folder .. '"')
-        end
+        local ret = os.execute('CMD /C MD "' .. _folder .. '"')
         if ret == 0 then return true, 'SUCCESSFULL' else return false, 'FAILED' end
     end
     ------------------------------------------------------------------------------------------------
@@ -135,15 +153,7 @@ do
     ------------------------------------------------------------------------------------------------
     CommonTools.FolderExists = function(self, _folder)
         if _folder == nil then return false end
-        local shell = self:require_protected('shell')
-        if shell then
-            return shell.fileexists(_folder)
-        else
-            local file = _folder..'/CommonTools_Folder.Exists'
-            local fh = io.open(file, 'w+')  -- try to write to passed folder
-            if fh ~= nil then fh:close() os.remove(file) return true
-            else return false end
-        end
+        return self:FileExists(_folder)
     end
     ------------------------------------------------------------------------------------------------
 
@@ -170,7 +180,7 @@ do
     ]]
     ------------------------------------------------------------------------------------------------
     CommonTools.GetFilesRecursive = function(self, _rootpath, _filetype, _exclude_attrib)
-        local tFiles, shell, pfile, pos, ext = {}, self:require_protected('shell')
+        local tFiles, pfile, pos, ext = {}
         _rootpath = _rootpath or self:GetCurrentDir()
         _filetype = _filetype or '*'
         _exclude_attrib = _exclude_attrib or ''
@@ -198,30 +208,17 @@ do
         end
 
         -- get all files recursively from _rootpath and filter it
-        if shell then -- use shell library, if exists
-            _, result = shell.exec('CMD /c dir "'.._rootpath..'" /b /o:N /s /a-d'.._exclude_attrib, nil, true, true)
-            local tResult = {}
-            for v in result:gmatch("[^\n]+") do
-                table.insert(tResult, (v:gsub('\r', ''):gsub('\n', '')))
-            end
-            -- check if files found
-            if #tResult == 1 then if not shell.fileexists(tResult[1]) then return {} end end
-            for i,file in ipairs(tResult) do
-                insert(file)
-            end
-        else
-            local pfile = io.popen('dir "'.._rootpath..'" /b /o:N /s /a-d'.._exclude_attrib)
-            local firstfile = true
-            for file in pfile:lines() do
-                if firstfile then
-                    if not self:FileExists(file) then break
-                    else firstfile = false
-                    end
+        local pfile = io.popen('dir "'.._rootpath..'" /b /o:N /s /a-d'.._exclude_attrib)
+        local firstfile = true
+        for file in pfile:lines() do
+            if firstfile then
+                if not self:FileExists(file) then break
+                else firstfile = false
                 end
-                insert(file)
             end
-            pfile:close()
+            insert(file)
         end
+        pfile:close()
 
         return tFiles
     end
@@ -236,23 +233,16 @@ do
     ]]
     ------------------------------------------------------------------------------------------------
     CommonTools.GetFolderRecursive = function(self, _rootpath, _exclude_attrib)
-        local tsub, shell = {}, self:require_protected('shell')
+        local tsub = {}
         _rootpath = _rootpath or self:GetCurrentDir()
         _exclude_attrib = _exclude_attrib or ''
         _exclude_attrib = _exclude_attrib:gsub('(.)', '-%1')
 
-        if shell then
-            _, result = shell.exec('CMD /c dir "'.._rootpath..'" /b /o:N /s /a:d'.._exclude_attrib, nil, true, true)
-            for v in result:gmatch("[^\n]+") do
-                table.insert(tsub, (v:gsub('\r', ''):gsub('\n', '')))
-            end
-        else
-            local pfile = io.popen('dir "'.._rootpath..'" /b /o:N /s /a:d'.._exclude_attrib)
-            for folder in pfile:lines() do
-                table.insert(tsub, folder)
-            end
-            pfile:close()
+        local pfile = io.popen('dir "'.._rootpath..'" /b /o:N /s /a:d'.._exclude_attrib)
+        for folder in pfile:lines() do
+            table.insert(tsub, folder)
         end
+        pfile:close()
 
         return tsub
     end
@@ -285,7 +275,7 @@ do
     end
     ------------------------------------------------------------------------------------------------
 
-    --[[
+    --[[ OBSOLET
         Load library protected
         Try to load a dll library. If it fails returns 'nil', otherwise the lib handler.
         NOTE: Some libraries are written wrong and can't accessed by the returned handler. In this
