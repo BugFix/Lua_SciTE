@@ -20,7 +20,7 @@ REQUIRES    module "conversion.lua"     ( https://github.com/BugFix/Conversion/b
 
     Content
 SYSTEM
-	CommandlineRead						Runs a command in the Windows shell and saves the result rows in a table
+    CommandlineRead                     Runs a command in the Windows shell and saves the result rows in a table
     FileExists                          Checks if a file exists
     FolderCreate                        Creates a folder (if not exists)
     FolderExists                        Checks if a folder exists
