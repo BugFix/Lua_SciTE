@@ -22,12 +22,18 @@ v 0.2
 ### Remarks
 The default Tab size is 4. You can change this setting specified for your file types. The following properties need changes:
 
-	tab.size.$(file.pattern.EXT)=VALUE
-	indent.size.$(file.patterns.EXT)=VALUE
+```properties
+tab.size.$(file.pattern.EXT)=VALUE
+indent.size.$(file.patterns.EXT)=VALUE
+```
+
 The (not file type specific) values:
 
-	tab.indents=1
-	backspace.unindents=1
+```properties
+tab.indents=1
+backspace.unindents=1
+```
+
 should also set.<br />
 If&nbsp;&nbsp;```tab.indents```&nbsp;&nbsp;is set then pressing tab within indentation whitespace indents by indent.size rather than inserting a tab character.
 If&nbsp;&nbsp;```backspace.unindents```&nbsp;&nbsp;then pressing backspace within indentation whitespace unindents by indent.size rather than deleting the character before the caret.
