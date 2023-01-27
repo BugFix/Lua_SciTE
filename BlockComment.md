@@ -10,8 +10,11 @@ I have now created a script that helps. It works with any file type for which th
 - Leading and trailing empty lines in selection will ignored!
 
 Selection
+
 ![selection](pic/comment_block_selection.png)
+
 After calling the hotkey
+
 ![result](pic/comment_block_result.png)
 
 #### Unset the comment block
@@ -21,8 +24,11 @@ There must exist an comment block near the cursor position (cursor inside the .s
 The script detects automatically the "comment.box.start" and the corresponding "comment.box.end" (also if nested) and works until this line.
 
 Set cursor to unselect
+
 ![cursor](pic/comment_block_cursor.png)
+
 After calling the hotkey
+
 ![unset](pic/comment_block_unset_done.png)
 
 #### Required entries for ``SciTEUser.properties``
