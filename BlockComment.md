@@ -38,7 +38,6 @@ comment.box.output=0
 Search a free command number. Use a Hotkey of your choice.
 If you have declared an option for user lua scripts (e.g.: "Lua.User.Scripts.Path=C:\code\lua"), copy the script to this folder.
 Otherwise copy it to a folder of your choice and change the path in the command: "dofile". But backslashes in the path must be masked. ("\\\\"). If your path has spaces don't forgot to encapsulate in string delimiters.
-
 ```properties
 # 36 Toggle Block Comment
 command.name.36.*=Toggle Block Comment
